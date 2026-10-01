@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>منظم المواعيد والإنجازات اليومية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg-color:#f4f6f9;--card-bg:#fff;--primary-color:#4a6fa5;--accent-color:#52b788;--text-color:#2b2d42;--text-muted:#6c757d;--border-color:#e9ecef;--shadow:0 4px 12px rgba(0,0,0,.05);--radius:12px;--done-bg:#f8fff9;--head-bg:#eef2f7;--check-bg:#eee;--check-hover:#ccc;--badge-bg:#e3f2fd;--badge-text:#0d47a1;--hero-a:#4a6fa5;--hero-b:#3a5a80;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg-color:#14171c;--card-bg:#1e2229;--primary-color:#7fa4d8;--text-color:#e8eaee;--text-muted:#9aa3ae;--border-color:#2d333c;--shadow:0 4px 12px rgba(0,0,0,.3);--done-bg:#1a2a22;--head-bg:#252b34;--check-bg:#323944;--check-hover:#434c59;--badge-bg:#1f3350;--badge-text:#a9cdf5;--hero-a:#3a5a80;--hero-b:#27405c}}
+:root[data-theme="dark"]{--bg-color:#14171c;--card-bg:#1e2229;--primary-color:#7fa4d8;--text-color:#e8eaee;--text-muted:#9aa3ae;--border-color:#2d333c;--shadow:0 4px 12px rgba(0,0,0,.3);--done-bg:#1a2a22;--head-bg:#252b34;--check-bg:#323944;--check-hover:#434c59;--badge-bg:#1f3350;--badge-text:#a9cdf5;--hero-a:#3a5a80;--hero-b:#27405c}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Cairo',system-ui,sans-serif}
+body{background:var(--bg-color);color:var(--text-color);padding-bottom:40px;font-size:15px;line-height:1.6}
+.container{max-width:900px;margin:0 auto;padding:20px 15px}
+header{text-align:center;margin-bottom:25px;background:var(--card-bg);padding:20px;border-radius:var(--radius);box-shadow:var(--shadow)}
+header h1{font-size:1.5rem;color:var(--primary-color);margin-bottom:5px}
+header p{color:var(--text-muted);font-size:.95rem}
+nav{display:flex;background:var(--card-bg);padding:8px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:25px;gap:5px;overflow-x:auto}
+.tab-btn{flex:1;padding:10px 15px;border:none;background:transparent;color:var(--text-muted);font-weight:600;font-size:.95rem;border-radius:8px;cursor:pointer;transition:all .3s;white-space:nowrap}
+.tab-btn.active{background:#4a6fa5;color:#fff}
+.tab-btn:hover:not(.active){background:rgba(74,111,165,.15);color:var(--primary-color)}
+.tab-content{display:none}
+.tab-content.active{display:block;animation:fadeIn .4s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.today-header-card{background:linear-gradient(135deg,var(--hero-a),var(--hero-b));color:#fff;padding:25px;border-radius:var(--radius);text-align:center;margin-bottom:20px;box-shadow:var(--shadow)}
+.today-day-name{font-size:2.2rem;font-weight:700;letter-spacing:1px;margin-bottom:5px}
+.today-date{font-size:1.1rem;opacity:.9}
+.task-list,.prayer-list{display:flex;flex-direction:column;gap:12px}
+.task-item,.prayer-card{background:var(--card-bg);padding:15px 20px;border-radius:var(--radius);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;border-right:5px solid var(--primary-color)}
+.prayer-card{border-right-color:#6c5ce7}
+.task-item.completed,.prayer-card.completed{border-right-color:var(--accent-color);background:var(--done-bg)}
+.task-item.completed .task-title{text-decoration:line-through;color:var(--text-muted)}
+.task-info{display:flex;flex-direction:column}
+.task-time{font-size:.85rem;color:var(--primary-color);font-weight:600;margin-bottom:3px}
+.task-title{font-size:1rem;font-weight:600}
+.checkbox-container{position:relative;cursor:pointer;user-select:none}
+.checkbox-container input{position:absolute;opacity:0;height:0;width:0}
+.checkmark{height:26px;width:26px;background:var(--check-bg);border-radius:6px;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.checkbox-container:hover input~.checkmark{background:var(--check-hover)}
+.checkbox-container input:checked~.checkmark{background:var(--accent-color)}
+.checkmark:after{content:"✓";color:#fff;font-size:16px;font-weight:bold;display:none}
+.checkbox-container input:checked~.checkmark:after{display:block}
+.week-grid{display:flex;flex-direction:column;gap:20px}
+.day-card{background:var(--card-bg);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.day-card-header{background:var(--head-bg);padding:12px 20px;font-weight:700;font-size:1.1rem;color:var(--primary-color);border-bottom:1px solid var(--border-color)}
+.day-card-tasks{padding:10px 20px}
+.week-task-row{padding:8px 0;border-bottom:1px dashed var(--border-color);display:flex;gap:10px}
+.week-task-row:last-child{border-bottom:none}
+.week-task-time{font-weight:600;color:var(--primary-color);min-width:140px}
+.week-task-name{flex:1}
+.prayer-header{text-align:center;background:var(--card-bg);padding:15px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:20px}
+.prayer-name{font-size:1.1rem;font-weight:700}
+.prayer-time{font-size:.95rem;color:var(--text-muted);margin-right:15px}
+.prayer-actions{display:flex;align-items:center;gap:15px}
+.alarm-btn{background:none;border:none;font-size:1.3rem;cursor:pointer;opacity:.35;transition:opacity .2s}
+.alarm-btn.active{opacity:1}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:15px;margin-bottom:25px}
+.stat-card{background:var(--card-bg);padding:20px;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center}
+.stat-value{font-size:2rem;font-weight:700;color:var(--primary-color);margin:8px 0}
+.stat-label{font-size:.9rem;color:var(--text-muted)}
+.progress-section{background:var(--card-bg);padding:20px;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:15px}
+.progress-title{font-weight:700;margin-bottom:10px;display:flex;justify-content:space-between}
+.progress-bar-bg{height:12px;background:var(--border-color);border-radius:6px;overflow:hidden}
+.progress-bar-fill{height:100%;background:var(--accent-color);width:0;transition:width .5s}
+.badge{display:inline-block;padding:4px 8px;border-radius:4px;font-size:.8rem;font-weight:bold;background:var(--badge-bg);color:var(--badge-text);margin-top:5px}
+.task-actions{display:flex;align-items:center;gap:14px}
+.enable-bar{background:var(--card-bg);box-shadow:var(--shadow);border-radius:var(--radius);padding:12px 16px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.enable-bar span{font-size:.9rem;color:var(--text-muted)}
+.enable-btn{background:#4a6fa5;color:#fff;border:none;border-radius:8px;padding:8px 14px;font-weight:600;cursor:pointer}
+.enable-btn.on{background:var(--accent-color)}
+#alarm-banner{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:99;background:#e67e22;color:#fff;border-radius:12px;padding:14px 16px;box-shadow:0 8px 24px rgba(0,0,0,.3);display:none;align-items:center;justify-content:space-between;gap:10px;font-weight:700}
+#alarm-banner button{background:#fff;color:#e67e22;border:none;border-radius:8px;padding:6px 14px;font-weight:700;cursor:pointer}
+.no-tasks{text-align:center;padding:30px;background:var(--card-bg);border-radius:var(--radius);color:var(--text-muted)}
+</style>
+</head>
+<body>
+<div id="alarm-banner"><span id="alarm-text"></span><button onclick="dismissBanner()">تم</button></div>
+<div class="container">
+<header>
+<h1>مُنظّم المواعيد والمهام اليومية</h1>
+<p>تخطيط متكامل للمذاكرة، المواعيد، ومواقيت الصلاة في مصر</p>
+</header>
+<nav>
+<button class="tab-btn active" onclick="switchTab(0)">اليوم الحالي</button>
+<button class="tab-btn" onclick="switchTab(1)">جدول الأسبوع</button>
+<button class="tab-btn" onclick="switchTab(2)">مواعيد الصلاة</button>
+<button class="tab-btn" onclick="switchTab(3)">قياس الإنجازات</button>
+</nav>
+
+<div id="tab-0" class="tab-content active">
+<div class="today-header-card">
+<div class="today-day-name" id="today-english-day"></div>
+<div class="today-date" id="today-full-date"></div>
+</div>
+<div class="enable-bar">
+<span id="alarm-status">المنبهات تعمل أثناء فتح الصفحة. اضغط للتفعيل.</span>
+<button class="enable-btn" id="enable-btn" onclick="enableAlarms()">🔔 تفعيل المنبهات</button>
+</div>
+<h3 style="margin-bottom:15px;color:var(--primary-color)">مهام اليوم المطلوب إنجازها:</h3>
+<div class="task-list" id="today-tasks-container"></div>
+</div>
+
+<div id="tab-1" class="tab-content"><div class="week-grid" id="week-schedule-container"></div></div>
+
+<div id="tab-2" class="tab-content">
+<div class="prayer-header">
+<h2 style="color:var(--primary-color);font-size:1.3rem">مواقيت الصلاة اليوم - القاهرة</h2>
+<span class="badge">حسب الهيئة المصرية العامة للمساحة (محسوبة تقريبيًا)</span>
+</div>
+<div class="prayer-list" id="prayer-list-container"></div>
+</div>
+
+<div id="tab-3" class="tab-content">
+<div class="stats-grid">
+<div class="stat-card"><div class="stat-label">نسبة إنجاز مهام اليوم</div><div class="stat-value" id="today-completion-rate">0%</div></div>
+<div class="stat-card"><div class="stat-label">الصلوات المكتملة اليوم</div><div class="stat-value" id="prayer-completion-count">0 / 5</div></div>
+<div class="stat-card"><div class="stat-label">التقييم العام</div><div class="stat-value" id="response-speed-score">ممتازة</div></div>
+</div>
+<div class="progress-section">
+<div class="progress-title"><span>مستوى الالتزام بجدول اليوم</span><span id="tasks-progress-percent">0%</span></div>
+<div class="progress-bar-bg"><div class="progress-bar-fill" id="tasks-progress-bar"></div></div>
+</div>
+<div class="progress-section">
+<div class="progress-title"><span>مستوى الالتزام بالصلوات الخمس</span><span id="prayers-progress-percent">0%</span></div>
+<div class="progress-bar-bg"><div class="progress-bar-fill" id="prayers-progress-bar" style="background:#6c5ce7"></div></div>
+</div>
+</div>
+</div>
+
+<script>
+const weeklySchedule = {
+"Saturday":[
+{time:"5:00 ص",title:"الاستيقاظ من النوم"},
+{time:"5:00 ص - 6:00 ص",title:"صلاة قيام الليل ثم صلاة الفجر"},
+{time:"6:00 ص - 8:00 ص",title:"مذاكرة انجلش منهج تالته"},
+{time:"8:00 ص - 10:00 ص",title:"مراجعة انجلش قبل السيشن (كورس اضافي)"},
+{time:"10:00 ص - 12:30 م",title:"سيشن انجلش"},
+{time:"12:30 م - 1:00 م",title:"مراجعة عربي"},
+{time:"2:00 م - 5:30 م",title:"درس عربي"},
+{time:"6:00 م - 8:00 م",title:"مذاكرة درس العربي وعمل واجبه"},
+{time:"8:00 م - 10:00 م",title:"حل كيمياء"},
+{time:"10:00 م - 10:30 م",title:"غدا ثم نوم"}],
+"Sunday":[
+{time:"5:00 ص",title:"الاستيقاظ من النوم"},
+{time:"5:00 ص - 6:00 ص",title:"صلاة قيام الليل ثم صلاة الفجر"},
+{time:"6:00 ص - 10:00 ص",title:"مذاكرة كيمياء"},
+{time:"10:00 ص - 11:00 ص",title:"فطار"},
+{time:"11:00 ص - 2:00 م",title:"الاسايمنت بتاع كورس الانجلش"},
+{time:"2:00 م - 3:00 م",title:"مراجعة فيزياء قبل الدرس"},
+{time:"3:30 م - 8:30 م",title:"درس فيزيا"},
+{time:"8:30 م - 10:00 م",title:"مذاكرة فيزياء"},
+{time:"10:00 م - 10:30 م",title:"غدا وبعدها نوم"}],
+"Monday":[
+{time:"5:00 ص",title:"الاستيقاظ من النوم"},
+{time:"5:00 ص - 6:00 ص",title:"صلاة قيام الليل ثم صلاة الفجر"},
+{time:"6:00 ص - 9:00 ص",title:"مذاكرة فيزياء"},
+{time:"9:00 ص - 10:00 ص",title:"فطار"},
+{time:"10:00 ص - 11:30 ص",title:"مذاكرة كيميا"},
+{time:"11:30 ص - 7:15 م",title:"درسين كيمياء ثم رياضة"},
+{time:"7:30 م - 9:00 م",title:"مذاكرة كيميا"},
+{time:"9:00 م - 10:00 م",title:"مذاكرة رياضة"},
+{time:"10:00 م - 10:30 م",title:"غدا ثم ميعاد النوم"}],
+"Tuesday":[
+{time:"5:00 ص",title:"الاستيقاظ من النوم"},
+{time:"5:00 ص - 6:00 ص",title:"صلاة قيام الليل ثم صلاة الفجر"},
+{time:"6:00 ص - 9:00 ص",title:"مذاكرة كيميا"},
+{time:"9:00 ص - 10:30 ص",title:"مذاكرة رياضة"},
+{time:"10:30 ص - 11:30 ص",title:"فطار"},
+{time:"11:30 ص - 3:00 م",title:"مذاكرة كيميا"},
+{time:"3:00 م - 4:30 م",title:"مراجعة انجلش"},
+{time:"4:30 م - 8:00 م",title:"درس"},
+{time:"8:00 م - 10:00 م",title:"مذاكرة انجلش"},
+{time:"10:00 م - 10:30 م",title:"غدا ثم نوم"}],
+"Wednesday":[
+{time:"5:00 ص",title:"الاستيقاظ من النوم"},
+{time:"5:00 ص - 6:00 ص",title:"صلاة قيام الليل ثم الفجر"},
+{time:"6:00 ص - 9:00 ص",title:"مذاكرة انجلش"},
+{time:"9:00 ص - 10:30 ص",title:"مذاكرة رياضة"},
+{time:"10:30 ص - 11:30 ص",title:"فطار"},
+{time:"11:30 ص - 4:00 م",title:"مذاكرة عربي"},
+{time:"4:00 م - 5:00 م",title:"راحة"},
+{time:"5:00 م - 8:00 م",title:"مذاكرة فيزياء"},
+{time:"8:00 م - 10:00 م",title:"مذاكرة كيمياء"},
+{time:"10:00 م - 10:30 م",title:"غدا ثم نوم"}],
+"Thursday":[
+{time:"5:00 ص",title:"الاستيقاظ من النوم"},
+{time:"5:00 ص - 6:00 ص",title:"قيام الليل ثم الفجر"},
+{time:"6:00 ص - 9:00 ص",title:"مذاكرة رياضة"},
+{time:"9:00 ص - 10:30 ص",title:"مراجعة ع السيشن"},
+{time:"10:30 ص - 11:30 ص",title:"فطار"},
+{time:"11:30 ص - 3:00 م",title:"مذاكرة كيمياء"},
+{time:"3:00 م - 3:30 م",title:"راحة"},
+{time:"3:30 م - 7:00 م",title:"درس رياضة"},
+{time:"7:00 م - 9:00 م",title:"مذاكرة رياضة"},
+{time:"9:00 م - 10:00 م",title:"راحة"},
+{time:"10:00 م - 10:30 م",title:"غدا ثم نوم"}],
+"Friday":[
+{time:"5:00 ص",title:"الاستيقاظ من النوم"},
+{time:"5:00 ص - 6:00 ص",title:"قيام الليل ثم الفجر"},
+{time:"6:00 ص - 9:00 ص",title:"مذاكرة انجلش"},
+{time:"9:00 ص - 10:00 ص",title:"فطار"},
+{time:"10:00 ص - 12:30 م",title:"سيشن انجلش"},
+{time:"12:30 م - 1:30 م",title:"صلاة الجمعة"},
+{time:"1:30 م - 4:00 م",title:"مذاكرة فيزياء"},
+{time:"4:00 م - 7:00 م",title:"مذاكرة كيمياء"},
+{time:"7:00 م - 8:00 م",title:"راحة"},
+{time:"8:00 م - 10:00 م",title:"مذاكرة عربي"},
+{time:"10:00 م - 10:30 م",title:"غدا ثم نوم"}]
+};
+
+const daysEnglish=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const TZ='Africa/Cairo';
+
+// ---- safe storage ----
+function load(key,def){try{const v=localStorage.getItem(key);return v?JSON.parse(v):def}catch(e){return def}}
+function save(key,val){try{localStorage.setItem(key,JSON.stringify(val))}catch(e){}}
+
+let completedTasks=load('completedTasks',{});
+let completedPrayers=load('completedPrayers',{});
+let prayerAlarms=load('prayerAlarms',{});
+let taskAlarms=load('taskAlarms',{});
+let todayEnglishName="";
+
+// ---- Cairo date helpers ----
+function cairoParts(date){
+  const p=new Intl.DateTimeFormat('en-GB',{timeZone:TZ,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false,weekday:'long'}).formatToParts(date);
+  const o={};p.forEach(x=>o[x.type]=x.value);
+  return {y:+o.year,m:+o.month,d:+o.day,h:+o.hour%24,min:+o.minute,weekday:o.weekday};
+}
+function todayKey(){const c=cairoParts(new Date());return `${c.y}-${String(c.m).padStart(2,'0')}-${String(c.d).padStart(2,'0')}`}
+
+// ---- Prayer times calc (Cairo, Egyptian General Authority of Survey: Fajr 19.5°, Isha 17.5°) ----
+const LAT=30.0444,LNG=31.2357,R=Math.PI/180;
+function calcPrayers(y,m,d){
+  const jd=Date.UTC(y,m-1,d,12)/86400000+2440587.5;
+  const D=jd-2451545.0;
+  const g=((357.529+0.98560028*D)%360)*R;
+  const q=(280.459+0.98564736*D)%360;
+  const L=((q+1.915*Math.sin(g)+0.020*Math.sin(2*g))%360)*R;
+  const e=(23.439-0.00000036*D)*R;
+  let RA=Math.atan2(Math.cos(e)*Math.sin(L),Math.cos(L))/R/15;RA=((RA%24)+24)%24;
+  const decl=Math.asin(Math.sin(e)*Math.sin(L));
+  let eqt=q/15-RA;eqt=((eqt+12)%24+24)%24-12;
+  const noon=12-LNG/15-eqt+ (1/60); // UTC hours (+1 min safety as per Egyptian authority)
+  const lat=LAT*R;
+  const hourAngle=alt=>Math.acos((Math.sin(alt)-Math.sin(decl)*Math.sin(lat))/(Math.cos(decl)*Math.cos(lat)))/R/15;
+  const fajr=noon-hourAngle(-19.5*R);
+  const maghrib=noon+hourAngle(-0.833*R);
+  const isha=noon+hourAngle(-17.5*R);
+  const asrAlt=Math.atan(1/(1+Math.tan(Math.abs(lat-decl))));
+  const asr=noon+hourAngle(asrAlt);
+  const base=Date.UTC(y,m-1,d);
+  const toDate=h=>new Date(base+Math.round(h*60)*60000);
+  return [
+    {name:"الفجر",date:toDate(fajr)},
+    {name:"الظهر",date:toDate(noon)},
+    {name:"العصر",date:toDate(asr)},
+    {name:"المغرب",date:toDate(maghrib)},
+    {name:"العشاء",date:toDate(isha)}
+  ];
+}
+function fmt12(date){
+  const c=cairoParts(date);
+  const period=c.h>=12?'م':'ص';
+  const h=c.h%12||12;
+  return `${h}:${String(c.min).padStart(2,'0')} ${period}`;
+}
+
+// ---- Init ----
+document.addEventListener('DOMContentLoaded',()=>{
+  initDates();renderTodayPage();renderWeekPage();renderPrayersPage();updateStats();
+  setInterval(checkAlarms,15000);
+});
+
+function initDates(){
+  const now=new Date();
+  todayEnglishName=cairoParts(now).weekday;
+  document.getElementById('today-english-day').innerText=todayEnglishName;
+  document.getElementById('today-full-date').innerText=now.toLocaleDateString('ar-EG',{timeZone:TZ,year:'numeric',month:'long',day:'numeric'});
+}
+
+function switchTab(i){
+  document.querySelectorAll('.tab-content').forEach((t,k)=>t.classList.toggle('active',k===i));
+  document.querySelectorAll('.tab-btn').forEach((b,k)=>b.classList.toggle('active',k===i));
+}
+
+function renderTodayPage(){
+  const c=document.getElementById('today-tasks-container');c.innerHTML='';
+  const tasks=weeklySchedule[todayEnglishName]||[];
+  if(!tasks.length){c.innerHTML='<div class="no-tasks">لا توجد مهام مسجلة لهذا اليوم.</div>';return}
+  const key=todayKey();
+  tasks.forEach((t,i)=>{
+    const id=`${key}_${i}`;const on=!!completedTasks[id];
+    const el=document.createElement('div');
+    el.className='task-item'+(on?' completed':'');
+    el.innerHTML=`<div class="task-info"><span class="task-time">${t.time}</span><span class="task-title">${t.title}</span></div>
+    <div class="task-actions">
+      <button class="alarm-btn ${taskAlarms[i]!==false?'active':''}" title="منبه هذا الموعد" onclick="toggleTaskAlarm(${i})">🔔</button>
+      <label class="checkbox-container"><input type="checkbox" ${on?'checked':''} onchange="toggleTask('${id}')"><span class="checkmark"></span></label>
+    </div>`;
+    c.appendChild(el);
+  });
+}
+function toggleTask(id){completedTasks[id]=!completedTasks[id];save('completedTasks',completedTasks);renderTodayPage();updateStats()}
+
+function renderWeekPage(){
+  const c=document.getElementById('week-schedule-container');c.innerHTML='';
+  ["Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday"].forEach(day=>{
+    const rows=(weeklySchedule[day]||[]).map(t=>`<div class="week-task-row"><span class="week-task-time">${t.time}</span><span class="week-task-name">${t.title}</span></div>`).join('');
+    const el=document.createElement('div');el.className='day-card';
+    el.innerHTML=`<div class="day-card-header">${day}</div><div class="day-card-tasks">${rows}</div>`;
+    c.appendChild(el);
+  });
+}
+
+function renderPrayersPage(){
+  const c=document.getElementById('prayer-list-container');c.innerHTML='';
+  const cp=cairoParts(new Date());
+  const prayers=calcPrayers(cp.y,cp.m,cp.d);
+  const key=todayKey();
+  prayers.forEach((p,i)=>{
+    const id=`${key}_prayer_${i}`;const on=!!completedPrayers[id];
+    const alarm=prayerAlarms[i]!==false;
+    const el=document.createElement('div');
+    el.className='prayer-card'+(on?' completed':'');
+    el.innerHTML=`<div style="display:flex;align-items:center"><span class="prayer-name">${p.name}</span><span class="prayer-time">${fmt12(p.date)}</span></div>
+    <div class="prayer-actions">
+      <button class="alarm-btn ${alarm?'active':''}" title="تنبيه الصلاة" onclick="toggleAlarm(${i})">🔔</button>
+      <label class="checkbox-container"><input type="checkbox" ${on?'checked':''} onchange="togglePrayer('${id}')"><span class="checkmark"></span></label>
+    </div>`;
+    c.appendChild(el);
+  });
+}
+function togglePrayer(id){completedPrayers[id]=!completedPrayers[id];save('completedPrayers',completedPrayers);renderPrayersPage();updateStats()}
+function toggleAlarm(i){
+  prayerAlarms[i]=prayerAlarms[i]===false;save('prayerAlarms',prayerAlarms);renderPrayersPage();
+}
+
+// ---- Alarms (work while the page is open) ----
+let audioCtx=null,lastFired={};
+let wakeLock=null;
+async function keepAwake(){try{if('wakeLock' in navigator&&!document.hidden)wakeLock=await navigator.wakeLock.request('screen')}catch(e){}}
+function enableAlarms(){
+  keepAwake();
+  try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume()}catch(e){}
+  try{if('Notification' in window&&Notification.permission==='default')Notification.requestPermission()}catch(e){}
+  beep(1);
+  const b=document.getElementById('enable-btn');b.classList.add('on');b.innerText='✓ المنبهات مفعّلة';
+  document.getElementById('alarm-status').innerText='مفعّلة: سيرن المنبه ويظهر إشعار عند بداية كل مهمة. اترك الصفحة مفتوحة وسأمنع الشاشة من الانطفاء.';
+}
+function beep(times){
+  if(!audioCtx)return;
+  for(let k=0;k<times;k++){
+    const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+    o.connect(g);g.connect(audioCtx.destination);o.frequency.value=k%2?880:660;
+    const t=audioCtx.currentTime+k*0.6;g.gain.setValueAtTime(0.3,t);g.gain.exponentialRampToValueAtTime(0.001,t+0.5);
+    o.start(t);o.stop(t+0.5);
+  }
+}
+function fire(text){
+  beep(6);
+  try{if(navigator.vibrate)navigator.vibrate([300,150,300,150,300])}catch(e){}
+  try{if('Notification' in window&&Notification.permission==='granted')new Notification(text)}catch(e){}
+  document.getElementById('alarm-text').innerText='⏰ '+text;
+  document.getElementById('alarm-banner').style.display='flex';
+}
+function dismissBanner(){document.getElementById('alarm-banner').style.display='none'}
+function toggleTaskAlarm(i){taskAlarms[i]=taskAlarms[i]===false;save('taskAlarms',taskAlarms);renderTodayPage()}
+function parseStart(str){
+  const m=str.match(/(\d{1,2}):(\d{2})\s*(ص|م)/);if(!m)return null;
+  let h=+m[1]%12;if(m[3]==='م')h+=12;
+  return {h,min:+m[2]};
+}
+function checkAlarms(){
+  const now=new Date();const cp=cairoParts(now);const key=todayKey();
+  (weeklySchedule[todayEnglishName]||[]).forEach((t,i)=>{
+    if(taskAlarms[i]===false)return;
+    const st=parseStart(t.time);if(!st)return;
+    const tag=`${key}_t${i}`;
+    const diff=(cp.h*60+cp.min)-(st.h*60+st.min);
+    if(diff>=0&&diff<=5&&!lastFired[tag]){lastFired[tag]=1;fire(`حان الآن: ${t.title}`)}
+  });
+  calcPrayers(cp.y,cp.m,cp.d).forEach((p,i)=>{
+    if(prayerAlarms[i]===false)return;
+    const pc=cairoParts(p.date);const tag=`${key}_p${i}`;
+    const pdiff=(cp.h*60+cp.min)-(pc.h*60+pc.min);
+    if(pdiff>=0&&pdiff<=5&&!lastFired[tag]){lastFired[tag]=1;fire(`حان الآن موعد صلاة ${p.name}`)}
+  });
+}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(audioCtx){keepAwake();try{audioCtx.resume()}catch(e){}}checkAlarms()}});
+
+function updateStats(){
+  const tasks=weeklySchedule[todayEnglishName]||[];const key=todayKey();
+  let done=0;tasks.forEach((_,i)=>{if(completedTasks[`${key}_${i}`])done++});
+  const tp=tasks.length?Math.round(done/tasks.length*100):0;
+  document.getElementById('today-completion-rate').innerText=tp+'%';
+  document.getElementById('tasks-progress-percent').innerText=tp+'%';
+  document.getElementById('tasks-progress-bar').style.width=tp+'%';
+  let pc=0;for(let i=0;i<5;i++)if(completedPrayers[`${key}_prayer_${i}`])pc++;
+  const pp=Math.round(pc/5*100);
+  document.getElementById('prayer-completion-count').innerText=`${pc} / 5`;
+  document.getElementById('prayers-progress-percent').innerText=pp+'%';
+  document.getElementById('prayers-progress-bar').style.width=pp+'%';
+  const avg=(tp+pp)/2;
+  document.getElementById('response-speed-score').innerText=avg<40?"تحتاج تحسين":avg<75?"جيدة جداً":"ممتازة";
+}
+</script>
+</body>
+</html>
